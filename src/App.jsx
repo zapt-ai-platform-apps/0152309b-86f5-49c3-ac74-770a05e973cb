@@ -9,7 +9,6 @@ import BusinessTemplates from './modules/businessTemplates/pages/BusinessTemplat
 import MarketResearch from './modules/marketResearch/pages/MarketResearch';
 import IdeaGenerator from './modules/ideaGenerator/pages/IdeaGenerator';
 import Dashboard from './modules/dashboard/pages/Dashboard';
-import ZaptBadge from './modules/core/components/ZaptBadge';
 
 function App() {
   return (
@@ -26,7 +25,6 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </Layout>
-      <ZaptBadge />
     </div>
   );
 }
