@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import * as Sentry from '@sentry/browser';
 
 function GoogleTrendsEmbed() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -7,6 +8,7 @@ function GoogleTrendsEmbed() {
   const [geo, setGeo] = useState('ID');
   const [timeRange, setTimeRange] = useState('today 12-m');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const iframeRef = useRef(null);
   
   const geoOptions = [
@@ -31,37 +33,85 @@ function GoogleTrendsEmbed() {
   ];
   
   const generateTrendsUrl = () => {
-    let baseUrl = 'https://trends.google.com/trends/embed/explore/TIMESERIES';
-    
-    const terms = comparison 
-      ? searchTerms.filter(term => term.trim()).map(term => encodeURIComponent(term))
-      : [encodeURIComponent(searchTerm)];
+    try {
+      // Use the correct embed format URL
+      const baseUrl = 'https://trends.google.com/trends/embed/explore/TIMESERIES';
       
-    if (terms.length === 0 || terms[0] === '') {
+      // Get non-empty terms and properly encode them
+      const terms = comparison 
+        ? searchTerms.filter(term => term.trim()).map(term => encodeURIComponent(term.trim()))
+        : [encodeURIComponent(searchTerm.trim())];
+        
+      // Validate terms
+      if (terms.length === 0 || terms[0] === '') {
+        return null;
+      }
+      
+      // Build query parameters
+      const params = new URLSearchParams();
+      
+      // Add each term as a separate 'q' parameter
+      terms.forEach(term => params.append('q', term));
+      
+      // Add other parameters
+      if (geo) params.append('geo', geo);
+      params.append('date', timeRange);
+      params.append('hl', 'id'); // Language set to Indonesian
+      params.append('tz', '420'); // Timezone offset for Indonesia (GMT+7)
+      
+      console.log(`Google Trends URL: ${baseUrl}?${params.toString()}`);
+      return `${baseUrl}?${params.toString()}`;
+    } catch (error) {
+      console.error('Error generating Google Trends URL:', error);
+      Sentry.captureException(error, {
+        tags: {
+          component: 'GoogleTrendsEmbed',
+          action: 'generateTrendsUrl'
+        },
+        extra: {
+          searchTerm,
+          searchTerms,
+          comparison,
+          geo,
+          timeRange
+        }
+      });
+      setError('Terjadi kesalahan saat membuat URL Google Trends');
       return null;
     }
-    
-    const queryParams = new URLSearchParams();
-    terms.forEach(term => queryParams.append('q', term));
-    
-    if (geo) queryParams.append('geo', geo);
-    queryParams.append('date', timeRange);
-    queryParams.append('hl', 'id');
-    
-    return `${baseUrl}?${queryParams.toString()}&tz=420`;
   };
   
   const handleSearch = () => {
     setLoading(true);
+    setError(null);
     
-    const url = generateTrendsUrl();
-    if (!url) {
+    try {
+      const url = generateTrendsUrl();
+      if (!url) {
+        setLoading(false);
+        setError('Mohon masukkan kata kunci pencarian yang valid');
+        return;
+      }
+      
+      if (iframeRef.current) {
+        // Clear the iframe first
+        iframeRef.current.src = '';
+        
+        // Set timeout to ensure the iframe is reset before setting new URL
+        setTimeout(() => {
+          iframeRef.current.src = url;
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Error in handleSearch:', error);
+      Sentry.captureException(error, {
+        tags: {
+          component: 'GoogleTrendsEmbed',
+          action: 'handleSearch'
+        }
+      });
       setLoading(false);
-      return;
-    }
-    
-    if (iframeRef.current) {
-      iframeRef.current.src = url;
+      setError('Terjadi kesalahan saat memuat Google Trends');
     }
   };
   
@@ -84,6 +134,7 @@ function GoogleTrendsEmbed() {
     }
   };
   
+  // When switching to comparison mode, initialize with the current search term
   useEffect(() => {
     if (comparison) {
       setSearchTerms([searchTerm || '']);
@@ -92,6 +143,27 @@ function GoogleTrendsEmbed() {
   
   const handleIframeLoad = () => {
     setLoading(false);
+  };
+  
+  const handleIframeError = () => {
+    setLoading(false);
+    setError('Tidak dapat memuat data Google Trends. Mohon coba kata kunci atau parameter lain.');
+    
+    // Log the error
+    console.error('Google Trends iframe failed to load');
+    Sentry.captureMessage('Google Trends iframe failed to load', {
+      level: 'error',
+      tags: {
+        component: 'GoogleTrendsEmbed'
+      },
+      extra: {
+        searchTerm,
+        searchTerms,
+        comparison,
+        geo,
+        timeRange
+      }
+    });
   };
   
   return (
@@ -126,7 +198,7 @@ function GoogleTrendsEmbed() {
           <div className="mb-4">
             <input
               type="text"
-              className="input"
+              className="input box-border"
               placeholder="Masukkan kata kunci pencarian..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -138,7 +210,7 @@ function GoogleTrendsEmbed() {
               <div key={index} className="flex gap-2">
                 <input
                   type="text"
-                  className="input"
+                  className="input box-border"
                   placeholder={`Kata kunci ${index + 1}...`}
                   value={term}
                   onChange={(e) => updateComparisonTerm(index, e.target.value)}
@@ -172,7 +244,7 @@ function GoogleTrendsEmbed() {
           <div>
             <label className="label">Lokasi</label>
             <select
-              className="input"
+              className="input box-border"
               value={geo}
               onChange={(e) => setGeo(e.target.value)}
             >
@@ -187,7 +259,7 @@ function GoogleTrendsEmbed() {
           <div>
             <label className="label">Rentang Waktu</label>
             <select
-              className="input"
+              className="input box-border"
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
             >
@@ -221,6 +293,17 @@ function GoogleTrendsEmbed() {
         </button>
       </div>
       
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+          <div className="flex items-start">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+      
       <div className="bg-white border rounded-lg overflow-hidden h-[500px] relative">
         {loading && (
           <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10">
@@ -235,16 +318,20 @@ function GoogleTrendsEmbed() {
           ref={iframeRef}
           width="100%"
           height="100%"
-          src=""
           frameBorder="0"
-          allowFullScreen
+          scrolling="no"
+          style={{ border: 0 }}
           onLoad={handleIframeLoad}
+          onError={handleIframeError}
+          sandbox="allow-scripts allow-same-origin allow-popups"
+          title="Google Trends Data"
         ></iframe>
       </div>
       
       <div className="mt-4 text-sm text-gray-500">
         <p>Data tren dari Google Trends dapat membantu Anda memahami popularitas relatif kata kunci terkait bisnis Anda.</p>
         <p className="mt-1">Gunakan analisis ini untuk mengevaluasi minat pasar dan mengidentifikasi tren musiman yang mungkin mempengaruhi permintaan.</p>
+        <p className="mt-3 text-xs border-t pt-2">Catatan: Jika tren tidak muncul, coba gunakan kata kunci yang lebih umum atau ubah parameter pencarian.</p>
       </div>
     </div>
   );
