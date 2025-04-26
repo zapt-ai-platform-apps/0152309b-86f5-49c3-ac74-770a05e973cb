@@ -3,33 +3,197 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
-    @apply text-gray-800 bg-gray-50;
+    @apply font-sans text-gray-800 bg-gray-50;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold text-gray-900;
+    @apply font-display font-bold text-gray-900;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl leading-tight;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl leading-tight;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl leading-snug;
+  }
+  
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+  
+  h5 {
+    @apply text-lg md:text-xl;
+  }
+  
+  p {
+    @apply leading-relaxed;
   }
 }
 
 @layer components {
   .card {
-    @apply bg-white p-6 rounded-xl shadow-sm border border-gray-100;
+    @apply bg-white p-6 rounded-xl shadow-soft border border-gray-100 transition-all duration-300 animate-scale;
+  }
+
+  .card:hover {
+    @apply shadow-soft-xl;
   }
 
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent box-border;
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent box-border transition-all duration-200;
   }
 
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
   }
 
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow transform hover:-translate-y-0.5;
   }
 
   .btn-outline {
-    @apply border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors;
+    @apply border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow transform hover:-translate-y-0.5;
   }
+  
+  .section-animate {
+    @apply animate-fade-in;
+  }
+  
+  .nav-item {
+    @apply relative after:absolute after:bg-primary-600 after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:transition-all after:duration-300 hover:after:w-full;
+  }
+  
+  .fade-in {
+    @apply animate-fade-in;
+  }
+  
+  .slide-up {
+    @apply animate-slide-up;
+  }
+  
+  .slide-down {
+    @apply animate-slide-down;
+  }
+  
+  .slide-left {
+    @apply animate-slide-left;
+  }
+  
+  .slide-right {
+    @apply animate-slide-right;
+  }
+  
+  .scale-animate {
+    @apply animate-scale;
+  }
+  
+  .stagger-1 {
+    animation-delay: 100ms;
+  }
+  
+  .stagger-2 {
+    animation-delay: 200ms;
+  }
+  
+  .stagger-3 {
+    animation-delay: 300ms;
+  }
+  
+  .stagger-4 {
+    animation-delay: 400ms;
+  }
+  
+  .stagger-5 {
+    animation-delay: 500ms;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c3e0ff;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #88b6ff;
+}
+
+/* Custom selection color */
+::selection {
+  background-color: #c3e0ff;
+  color: #1a2c56;
+}
+
+/* Form focus styles */
+select:focus, textarea:focus, input:focus {
+  @apply ring-2 ring-primary-400 ring-opacity-50 border-primary-400;
+}
+
+/* Prevent overflow issues */
+.overflow-fix {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Animated gradient background */
+.animated-gradient {
+  background: linear-gradient(-45deg, #f0f9ff, #e1f0ff, #d1e9ff, #c3e0ff);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 300ms, transform 300ms;
 }

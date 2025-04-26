@@ -1,6 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import FeatureCard from '../components/FeatureCard';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+      delayChildren: 0.3
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5 }
+  }
+};
 
 function HomePage() {
   const features = [
@@ -71,36 +92,77 @@ function HomePage() {
 
   return (
     <div>
-      <div className="pt-6 pb-16 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Validator Ide Bisnis</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+      <motion.div 
+        className="pt-10 pb-16 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+      >
+        <motion.h1 
+          className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          Validator Ide Bisnis
+        </motion.h1>
+        <motion.p 
+          className="text-xl text-gray-600 max-w-3xl mx-auto mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
           Partner strategis untuk menganalisis potensi ide bisnis secara mendalam dan memandu langkah demi langkah dalam membangun bisnis yang solid.
-        </p>
-        <div className="flex justify-center space-x-4">
+        </motion.p>
+        <motion.div 
+          className="flex flex-col sm:flex-row justify-center gap-4 mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
           <Link to="/generator-ide" className="btn-primary px-6 py-3 text-lg cursor-pointer">
             Mulai Eksplorasi Ide
           </Link>
           <Link to="/dashboard" className="btn-outline px-6 py-3 text-lg cursor-pointer">
             Kelola Proyek
           </Link>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        viewport={{ once: true, amount: 0.1 }}
+      >
         {features.map((feature, index) => (
-          <FeatureCard
-            key={index}
-            icon={feature.icon}
-            title={feature.title}
-            description={feature.description}
-            linkTo={feature.linkTo}
-          />
+          <motion.div key={index} variants={itemVariants} custom={index}>
+            <FeatureCard
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              linkTo={feature.linkTo}
+            />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="mt-16 bg-blue-50 rounded-2xl p-8">
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          <div className="md:max-w-xl mb-6 md:mb-0">
+      <motion.div 
+        className="mt-16 bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-8 shadow-soft overflow-hidden relative"
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex flex-col md:flex-row items-center justify-between relative z-10">
+          <motion.div 
+            className="md:max-w-xl mb-6 md:mb-0"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Mulai Perjalanan Bisnis Anda Sekarang</h2>
             <p className="text-gray-600 mb-6">
               Buat proyek baru untuk melacak kemajuan dan mendapatkan bimbingan langkah demi langkah dalam mengembangkan ide bisnis Anda.
@@ -108,22 +170,41 @@ function HomePage() {
             <Link to="/dashboard" className="btn-primary px-6 py-3 inline-block cursor-pointer">
               Buat Proyek Baru
             </Link>
-          </div>
-          <div className="w-full md:w-auto">
+          </motion.div>
+          <motion.div 
+            className="w-full md:w-auto"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            animate={{ y: [0, -10, 0] }}
+            transition={{
+              repeat: Infinity,
+              duration: 4,
+              ease: "easeInOut"
+            }}
+          >
             <img 
               src="https://supabase.zapt.ai/storage/v1/render/image/public/icons/c7bd5333-787f-461f-ae9b-22acbc0ed4b0/55145115-0624-472f-96b9-d5d88aae355f.png?width=200&height=200" 
               alt="Validator Ide Bisnis" 
               className="w-40 h-40 mx-auto" 
             />
-          </div>
+          </motion.div>
         </div>
-      </div>
+        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-primary-200 rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute -top-10 -left-10 w-40 h-40 bg-primary-300 rounded-full opacity-10 blur-3xl"></div>
+      </motion.div>
       
-      <div className="mt-4 text-center text-sm text-gray-500">
-        <a href="https://www.zapt.ai" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
+      <motion.div 
+        className="mt-6 text-center text-sm text-gray-500"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 0.5 }}
+      >
+        <a href="https://www.zapt.ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary-600 transition-colors">
           Made on ZAPT
         </a>
-      </div>
+      </motion.div>
     </div>
   );
 }
